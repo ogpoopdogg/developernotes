@@ -24,7 +24,6 @@
       overflow: hidden;
     }
 
-    /* Header & Glowing Icon */
     header { 
       background: #0a0a0a; padding: 12px 30px; border-bottom: 2px solid var(--accent); 
       display: flex; justify-content: space-between; align-items: center;
@@ -43,7 +42,6 @@
     }
     header h1 { margin: 0; font-size: 22px; color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 900; }
 
-    /* Login Overlay */
     #login-overlay { 
       position: fixed; inset: 0; background: #000; z-index: 9999; 
       display: flex; flex-direction: column; align-items: center; justify-content: center; 
@@ -63,47 +61,66 @@
       color: #000; font-weight: 900; font-size: 16px; border-radius: 8px; cursor: pointer; text-transform: uppercase; 
     }
 
-    /* Main Layout */
     #app-container { display: none; height: 100vh; flex-direction: column; }
     .main-content { display: flex; flex: 1; overflow: hidden; }
 
-    /* Sidebar */
+    /* Sidebar and Single Page History */
     #notes-sidebar { 
-      width: 380px; background: var(--bg-panel); border-right: 1px solid var(--border-soft); 
+      width: 420px; background: var(--bg-panel); border-right: 1px solid var(--border-soft); 
       display: flex; flex-direction: column;
     }
-    .sidebar-header { padding: 20px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-soft); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #888; font-size: 12px; }
+    .sidebar-header { 
+      padding: 15px 20px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--border-soft); 
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .sidebar-title { font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #888; font-size: 12px; }
+    
     #dev-list { padding: 15px; flex: 1; overflow-y: auto; background: #141417; }
     .dev-item { 
-      background: #1e1e24; padding: 18px; margin-bottom: 15px; border-radius: 12px; border: 1px solid #333;
-      transition: transform 0.2s;
+      background: #1e1e24; padding: 18px; margin-bottom: 20px; border-radius: 12px; border: 1px solid #333;
+      position: relative;
     }
-    .dev-item:hover { transform: translateY(-2px); border-color: var(--accent); }
-    .dev-hdr { font-size: 11px; color: var(--accent); margin-bottom: 10px; font-weight: 800; text-transform: uppercase; display: flex; justify-content: space-between; }
+    .dev-hdr { font-size: 11px; color: var(--accent); margin-bottom: 10px; font-weight: 800; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
     .dev-body { font-size: 14px; line-height: 1.6; color: #ddd; }
 
+    /* Copy Symbols */
+    .copy-btn {
+      background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      padding: 5px; border-radius: 4px; transition: 0.2s;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.1); }
+    .copy-btn svg { width: 16px; height: 16px; fill: #666; transition: 0.2s; }
+    .copy-btn:hover svg { fill: var(--accent); }
+    .copy-all-text { font-size: 10px; font-weight: 900; color: #666; margin-right: 8px; text-transform: uppercase; }
+
     /* Editor Area */
-    #editor-area { flex: 1; display: flex; flex-direction: column; padding: 40px; background: #0a0a0c; }
+    #editor-area { flex: 1; display: flex; flex-direction: column; padding: 30px; background: #0a0a0c; }
     .editor-wrapper { 
       flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: 12px; overflow: hidden; 
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
     #dev-editor { flex: 1; font-size: 16px; color: #111; }
     .ql-toolbar { background: #f8f9fa; border: none !important; border-bottom: 1px solid #ddd !important; padding: 12px !important; }
-    .ql-container { border: none !important; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 
-    .action-bar { margin-top: 25px; display: flex; justify-content: flex-end; align-items: center; gap: 20px; }
+    .action-bar { margin-top: 20px; display: flex; justify-content: flex-end; align-items: center; gap: 20px; }
     .save-btn { 
       background: var(--accent); color: #000; border: none; padding: 16px 40px; font-size: 16px; 
       font-weight: 900; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; 
-      box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3); transition: 0.2s;
+      box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3);
     }
-    .save-btn:hover { background: #ffe066; transform: scale(1.02); }
-    .logout-btn { background: transparent; color: #666; border: 1px solid #444; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 11px; transition: 0.2s; }
-    .logout-btn:hover { color: #fff; border-color: #fff; }
+    .logout-btn { background: transparent; color: #666; border: 1px solid #444; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 11px; }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: #000; padding: 10px 20px; border-radius: 50px;
+      font-weight: 900; font-size: 12px; text-transform: uppercase; display: none; z-index: 10000;
+    }
   </style>
 </head>
 <body>
+
+  <div id="toast">Copied to Clipboard</div>
 
   <div id="login-overlay">
     <div class="login-box">
@@ -121,16 +138,24 @@
         <h1>Dev Notes Portal</h1>
       </div>
       <div style="display: flex; align-items: center; gap: 20px;">
-        <span id="user-display" style="font-weight: 800; color: #39FF14; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;"></span>
+        <span id="user-display" style="font-weight: 800; color: #39FF14; font-size: 13px; text-transform: uppercase;"></span>
         <button class="logout-btn" onclick="logout()">Logout</button>
       </div>
     </header>
 
     <div class="main-content">
       <div id="notes-sidebar">
-        <div class="sidebar-header">Recent Documentation</div>
+        <div class="sidebar-header">
+          <div class="sidebar-title">Documentation History</div>
+          <div style="display: flex; align-items: center;">
+            <span class="copy-all-text">Copy All</span>
+            <button class="copy-btn" title="Copy All Notes" onclick="copyAllNotes()">
+              <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+            </button>
+          </div>
+        </div>
         <div id="dev-list">
-          <p style="text-align:center; color:#555; margin-top:20px; font-size: 12px;">Syncing with database...</p>
+          <p style="text-align:center; color:#555; margin-top:20px; font-size: 11px;">Syncing documentation...</p>
         </div>
       </div>
 
@@ -139,8 +164,7 @@
           <div id="dev-editor"></div>
         </div>
         <div class="action-bar">
-          <span style="color: #555; font-size: 12px; font-weight: bold;">E&C INTERNAL USE ONLY</span>
-          <button class="save-btn" onclick="saveDevNote()">Save Documentation</button>
+          <button class="save-btn" onclick="saveDevNote()">Save Entry</button>
         </div>
       </div>
     </div>
@@ -152,7 +176,6 @@
   <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 
   <script>
-    // Config from index.html
     firebase.initializeApp({
       apiKey: "AIzaSyAKmgoXA4m3cRTmxJq4aUyva5SVvFbTNqg",
       authDomain: "eandccourier-36fcc.firebaseapp.com",
@@ -162,30 +185,20 @@
 
     const db = firebase.database();
     let currentUserEmail = "";
-
-    const toolbarOptions = [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'color': [] }, { 'background': [] }],
-      ['blockquote', 'code-block'],
-      [{ 'align': [] }],
-      ['clean']
-    ];
+    let allNotesData = [];
 
     const devQuill = new Quill('#dev-editor', {
       theme: 'snow',
-      modules: { toolbar: toolbarOptions },
-      placeholder: 'Enter technical updates, bug fixes, or system changes...'
+      modules: { toolbar: [[{'header': [1, 2, false]}], ['bold', 'italic', 'underline'], [{'list': 'ordered'}, {'list': 'bullet'}], ['code-block'], ['clean']] },
+      placeholder: 'Enter system updates...'
     });
 
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         currentUserEmail = user.email;
-        const rawName = user.email.split('@')[0];
         document.getElementById('login-overlay').style.display = 'none';
         document.getElementById('app-container').style.display = 'flex';
-        document.getElementById('user-display').innerText = rawName;
+        document.getElementById('user-display').innerText = user.email.split('@')[0];
         loadNotes();
       } else {
         document.getElementById('login-overlay').style.display = 'flex';
@@ -196,7 +209,7 @@
     function attemptLogin() {
       const email = document.getElementById('login-user').value.trim();
       const pass = document.getElementById('login-pin').value.trim();
-      firebase.auth().signInWithEmailAndPassword(email, pass).catch(e => alert("Access Denied: " + e.message));
+      firebase.auth().signInWithEmailAndPassword(email, pass).catch(e => alert("Error: " + e.message));
     }
 
     function logout() { firebase.auth().signOut(); }
@@ -206,19 +219,40 @@
       db.ref('developer').on('value', snap => {
         list.innerHTML = '';
         const notes = snap.val() || {};
-        const sortedNotes = Object.values(notes).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        allNotesData = Object.values(notes).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
-        sortedNotes.forEach(note => {
+        allNotesData.forEach((note, index) => {
+          const noteId = `note-content-${index}`;
           list.innerHTML += `
             <div class="dev-item">
               <div class="dev-hdr">
-                <span>${note.user}</span>
-                <span style="color:#555;">${note.date}</span>
+                <span>${note.user} • ${note.date}</span>
+                <button class="copy-btn" onclick="copySingleNote('${noteId}')" title="Copy Entry">
+                  <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                </button>
               </div>
-              <div class="dev-body">${note.text}</div>
+              <div class="dev-body" id="${noteId}">${note.text}</div>
             </div>`;
         });
       });
+    }
+
+    function showToast() {
+      const t = document.getElementById('toast');
+      t.style.display = 'block';
+      setTimeout(() => t.style.display = 'none', 2000);
+    }
+
+    function copySingleNote(id) {
+      const el = document.getElementById(id);
+      const text = el.innerText || el.textContent;
+      navigator.clipboard.writeText(text).then(showToast);
+    }
+
+    function copyAllNotes() {
+      if (allNotesData.length === 0) return;
+      const fullText = allNotesData.map(n => `--- ${n.user} (${n.date}) ---\n${n.text.replace(/<[^>]*>/g, '')}`).join('\n\n');
+      navigator.clipboard.writeText(fullText).then(showToast);
     }
 
     function saveDevNote() {
@@ -232,9 +266,7 @@
         user: user,
         date: dateStr,
         timestamp: firebase.database.ServerValue.TIMESTAMP
-      }).then(() => {
-        devQuill.setText('');
-      });
+      }).then(() => devQuill.setText(''));
     }
   </script>
 </body>
