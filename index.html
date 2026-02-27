@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Developer Portal | E&C Courier</title>
+  
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-core: #0f0f11;
+      --bg-panel: #1e1e24;
+      --accent: #ffcc00;
+      --text-main: #ffffff;
+      --border-soft: #333;
+    }
+
+    * { box-sizing: border-box; }
+    body, html { 
+      margin: 0; padding: 0; height: 100%; 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+      background: var(--bg-core); color: var(--text-main);
+      overflow: hidden;
+    }
+
+    /* Header & Glowing Icon */
+    header { 
+      background: #0a0a0a; padding: 12px 30px; border-bottom: 2px solid var(--accent); 
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      z-index: 100;
+    }
+    .header-left { display: flex; align-items: center; }
+    .header-logo { 
+      height: 32px; width: auto; margin-right: 15px; 
+      filter: drop-shadow(0 0 5px var(--accent)); 
+      animation: logo-glow 2s infinite alternate; 
+    }
+    @keyframes logo-glow { 
+      from { filter: drop-shadow(0 0 2px var(--accent)); transform: scale(1); } 
+      to { filter: drop-shadow(0 0 10px var(--accent)); transform: scale(1.05); } 
+    }
+    header h1 { margin: 0; font-size: 22px; color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 900; }
+
+    /* Login Overlay */
+    #login-overlay { 
+      position: fixed; inset: 0; background: #000; z-index: 9999; 
+      display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    }
+    .login-box { 
+      width: 100%; max-width: 400px; background: var(--bg-panel); padding: 40px; 
+      border-radius: 16px; border: 1px solid var(--border-soft); box-shadow: 0 20px 50px rgba(0,0,0,0.7); text-align: center; 
+    }
+    .login-box h2 { color: var(--accent); margin-top: 0; text-transform: uppercase; letter-spacing: 2px; }
+    .login-input { 
+      width: 100%; padding: 15px; margin: 10px 0; background: #111; border: 1px solid var(--border-soft); 
+      color: var(--text-main); border-radius: 8px; font-size: 16px; outline: none; transition: 0.3s;
+    }
+    .login-input:focus { border-color: var(--accent); background: #1a1a1a; }
+    .login-submit { 
+      width: 100%; padding: 15px; margin-top: 20px; background: var(--accent); border: none; 
+      color: #000; font-weight: 900; font-size: 16px; border-radius: 8px; cursor: pointer; text-transform: uppercase; 
+    }
+
+    /* Main Layout */
+    #app-container { display: none; height: 100vh; flex-direction: column; }
+    .main-content { display: flex; flex: 1; overflow: hidden; }
+
+    /* Sidebar */
+    #notes-sidebar { 
+      width: 380px; background: var(--bg-panel); border-right: 1px solid var(--border-soft); 
+      display: flex; flex-direction: column;
+    }
+    .sidebar-header { padding: 20px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-soft); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #888; font-size: 12px; }
+    #dev-list { padding: 15px; flex: 1; overflow-y: auto; background: #141417; }
+    .dev-item { 
+      background: #1e1e24; padding: 18px; margin-bottom: 15px; border-radius: 12px; border: 1px solid #333;
+      transition: transform 0.2s;
+    }
+    .dev-item:hover { transform: translateY(-2px); border-color: var(--accent); }
+    .dev-hdr { font-size: 11px; color: var(--accent); margin-bottom: 10px; font-weight: 800; text-transform: uppercase; display: flex; justify-content: space-between; }
+    .dev-body { font-size: 14px; line-height: 1.6; color: #ddd; }
+
+    /* Editor Area */
+    #editor-area { flex: 1; display: flex; flex-direction: column; padding: 40px; background: #0a0a0c; }
+    .editor-wrapper { 
+      flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: 12px; overflow: hidden; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    #dev-editor { flex: 1; font-size: 16px; color: #111; }
+    .ql-toolbar { background: #f8f9fa; border: none !important; border-bottom: 1px solid #ddd !important; padding: 12px !important; }
+    .ql-container { border: none !important; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+    .action-bar { margin-top: 25px; display: flex; justify-content: flex-end; align-items: center; gap: 20px; }
+    .save-btn { 
+      background: var(--accent); color: #000; border: none; padding: 16px 40px; font-size: 16px; 
+      font-weight: 900; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; 
+      box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3); transition: 0.2s;
+    }
+    .save-btn:hover { background: #ffe066; transform: scale(1.02); }
+    .logout-btn { background: transparent; color: #666; border: 1px solid #444; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 11px; transition: 0.2s; }
+    .logout-btn:hover { color: #fff; border-color: #fff; }
+  </style>
+</head>
+<body>
+
+  <div id="login-overlay">
+    <div class="login-box">
+      <h2>Developer Access</h2>
+      <input type="email" id="login-user" class="login-input" placeholder="Email" autofocus>
+      <input type="password" id="login-pin" class="login-input" placeholder="Password">
+      <button class="login-submit" onclick="attemptLogin()">Sign In</button>
+    </div>
+  </div>
+
+  <div id="app-container">
+    <header>
+      <div class="header-left">
+        <img src="icon2.png" class="header-logo" alt="E&C Logo">
+        <h1>Dev Notes Portal</h1>
+      </div>
+      <div style="display: flex; align-items: center; gap: 20px;">
+        <span id="user-display" style="font-weight: 800; color: #39FF14; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;"></span>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <div id="notes-sidebar">
+        <div class="sidebar-header">Recent Documentation</div>
+        <div id="dev-list">
+          <p style="text-align:center; color:#555; margin-top:20px; font-size: 12px;">Syncing with database...</p>
+        </div>
+      </div>
+
+      <div id="editor-area">
+        <div class="editor-wrapper">
+          <div id="dev-editor"></div>
+        </div>
+        <div class="action-bar">
+          <span style="color: #555; font-size: 12px; font-weight: bold;">E&C INTERNAL USE ONLY</span>
+          <button class="save-btn" onclick="saveDevNote()">Save Documentation</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+  <script>
+    // Config from index.html
+    firebase.initializeApp({
+      apiKey: "AIzaSyAKmgoXA4m3cRTmxJq4aUyva5SVvFbTNqg",
+      authDomain: "eandccourier-36fcc.firebaseapp.com",
+      databaseURL: "https://eandccourier-36fcc-default-rtdb.firebaseio.com",
+      projectId: "eandccourier-36fcc",
+    });
+
+    const db = firebase.database();
+    let currentUserEmail = "";
+
+    const toolbarOptions = [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'color': [] }, { 'background': [] }],
+      ['blockquote', 'code-block'],
+      [{ 'align': [] }],
+      ['clean']
+    ];
+
+    const devQuill = new Quill('#dev-editor', {
+      theme: 'snow',
+      modules: { toolbar: toolbarOptions },
+      placeholder: 'Enter technical updates, bug fixes, or system changes...'
+    });
+
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        currentUserEmail = user.email;
+        const rawName = user.email.split('@')[0];
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('app-container').style.display = 'flex';
+        document.getElementById('user-display').innerText = rawName;
+        loadNotes();
+      } else {
+        document.getElementById('login-overlay').style.display = 'flex';
+        document.getElementById('app-container').style.display = 'none';
+      }
+    });
+
+    function attemptLogin() {
+      const email = document.getElementById('login-user').value.trim();
+      const pass = document.getElementById('login-pin').value.trim();
+      firebase.auth().signInWithEmailAndPassword(email, pass).catch(e => alert("Access Denied: " + e.message));
+    }
+
+    function logout() { firebase.auth().signOut(); }
+
+    function loadNotes() {
+      const list = document.getElementById('dev-list');
+      db.ref('developer').on('value', snap => {
+        list.innerHTML = '';
+        const notes = snap.val() || {};
+        const sortedNotes = Object.values(notes).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        sortedNotes.forEach(note => {
+          list.innerHTML += `
+            <div class="dev-item">
+              <div class="dev-hdr">
+                <span>${note.user}</span>
+                <span style="color:#555;">${note.date}</span>
+              </div>
+              <div class="dev-body">${note.text}</div>
+            </div>`;
+        });
+      });
+    }
+
+    function saveDevNote() {
+      if (devQuill.getText().trim() === "") return;
+      const user = currentUserEmail.split('@')[0];
+      const now = new Date();
+      const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+      db.ref('developer').push({
+        text: devQuill.root.innerHTML,
+        user: user,
+        date: dateStr,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      }).then(() => {
+        devQuill.setText('');
+      });
+    }
+  </script>
+</body>
+</html>
