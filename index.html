@@ -61,7 +61,7 @@
       color: #000; font-weight: 900; font-size: 16px; border-radius: 8px; cursor: pointer; text-transform: uppercase; 
     }
 
-    #app-container { display: none; height: 100vh; flex-direction: column; }
+    #app-container { display: none; height: 100vh; flex-direction: column; position: relative; }
     .main-content { display: flex; flex: 1; overflow: hidden; }
 
     /* Sidebar and Single Page History */
@@ -104,7 +104,7 @@
 
     .action-bar { margin-top: 20px; display: flex; justify-content: flex-end; align-items: center; gap: 20px; }
     .save-btn { 
-      background: #007bff; color: #fff; border: none; padding: 16px 40px; font-size: 16px; 
+      background: #007bff; color: #ffffff; border: none; padding: 16px 40px; font-size: 16px; 
       font-weight: 900; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; 
       box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
     }
@@ -118,8 +118,8 @@
     }
 
     .dev-item.has-status { position: relative; }
-    .dev-item.has-status::after { content: ""; position: absolute; inset: 0; background: rgba(255, 140, 0, 0.15); backdrop-filter: blur(0.8px); -webkit-backdrop-filter: blur(0.8px); z-index: 10; pointer-events: none; border-radius: inherit; }
-    .status-hollow-text { color: #fff; font-size: 14px; font-weight: 900; text-transform: uppercase; margin-right: 12px; letter-spacing: 1px; position: relative; z-index: 11; }
+    .dev-item.has-status::after { content: ""; position: absolute; inset: 0; background: rgba(255, 140, 0, 0.15); backdrop-filter: blur(0.2px); -webkit-backdrop-filter: blur(0.2px); z-index: 10; pointer-events: none; border-radius: inherit; }
+    .status-hollow-text { color: #ffffff; font-size: 14px; font-weight: bold; text-transform: uppercase; margin-right: 12px; letter-spacing: 1px; position: relative; z-index: 11; }
     .admin-status-box { margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px; position: relative; z-index: 11; }
     .admin-status-btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 6px 12px; font-size: 11px; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-weight: bold; }
     .admin-status-input { flex: 1; background: #111; border: 1px solid #444; color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 12px; display: none; }
@@ -195,10 +195,10 @@
         <div class="editor-wrapper">
           <div id="dev-editor"></div>
         </div>
-        <div class="action-bar">
-          <button class="save-btn" onclick="saveDevNote()">Submit</button>
-        </div>
       </div>
+    </div>
+    <div class="action-bar">
+      <button class="save-btn" onclick="saveDevNote()">Submit</button>
     </div>
     <button id="mobile-toggle" onclick="toggleMobileView()">← View History</button>
   </div>
