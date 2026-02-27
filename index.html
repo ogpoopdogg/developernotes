@@ -117,6 +117,14 @@
       font-weight: 900; font-size: 12px; text-transform: uppercase; display: none; z-index: 10000;
     }
 
+    .dev-item.has-status { position: relative; }
+    .dev-item.has-status::after { content: ""; position: absolute; inset: 0; background: rgba(0, 100, 255, 0.15); backdrop-filter: blur(1.5px); -webkit-backdrop-filter: blur(1.5px); z-index: 10; pointer-events: none; border-radius: inherit; }
+    .status-hollow-text { color: transparent; -webkit-text-stroke: 1px rgba(255,255,255,0.8); font-size: 14px; font-weight: 900; text-transform: uppercase; margin-right: 12px; letter-spacing: 1px; }
+    .admin-status-box { margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px; position: relative; z-index: 11; }
+    .admin-status-btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 6px 12px; font-size: 11px; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-weight: bold; }
+    .admin-status-input { flex: 1; background: #111; border: 1px solid #444; color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 12px; display: none; }
+    .admin-status-done { background: var(--accent); color: #000; border: none; padding: 6px 12px; font-size: 11px; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-weight: bold; display: none; }
+
     #mobile-toggle { display: none; }
     @media (max-width: 768px) {
       .main-content {
@@ -126,14 +134,19 @@
       }
       .main-content.show-history { transform: translateX(0); }
       #notes-sidebar, #editor-area { width: 100vw; max-width: 100vw; flex: none; border-right: none; }
-      #editor-area { padding: 15px; }
-      .action-bar { padding-bottom: 60px; }
-      #mobile-toggle {
-        display: block; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-        background: var(--accent); color: #000; border: none; padding: 12px 24px; border-radius: 50px;
-        font-weight: 900; text-transform: uppercase; box-shadow: 0 4px 15px rgba(255, 204, 0, 0.4);
-        z-index: 9999; cursor: pointer; white-space: nowrap;
+      #editor-area { padding: 15px; padding-bottom: 80px; position: relative; }
+      .action-bar { 
+        position: absolute; bottom: 20px; right: 15px; margin: 0; padding: 0; 
+        width: calc(50% - 22px); justify-content: flex-end; z-index: 9999; 
       }
+      .save-btn { width: 100%; padding: 12px 0; font-size: 11px; margin: 0; text-align: center; }
+      #mobile-toggle {
+        display: block; position: fixed; bottom: 20px; left: 15px; transform: none;
+        background: var(--accent); color: #000; border: none; padding: 12px 0; border-radius: 50px;
+        font-weight: 900; text-transform: uppercase; box-shadow: 0 4px 15px rgba(255, 204, 0, 0.4);
+        z-index: 9999; cursor: pointer; white-space: nowrap; width: calc(50% - 22px); text-align: center;
+      }
+      .main-content.show-history ~ #mobile-toggle { left: 50%; transform: translateX(-50%); width: 200px; }
     }
   </style>
 </head>
@@ -239,22 +252,46 @@
       db.ref('developer').on('value', snap => {
         list.innerHTML = '';
         const notes = snap.val() || {};
-        allNotesData = Object.values(notes).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        allNotesData = Object.entries(notes).map(([key, val]) => ({...val, id: key})).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
         allNotesData.forEach((note, index) => {
           const noteId = `note-content-${index}`;
+          const hasStatus = note.statusText ? 'has-status' : '';
+          const hollowText = note.statusText ? `<span class="status-hollow-text">${note.statusText}</span>` : '';
+          const adminDisplay = (currentUserEmail === 'justin@ec.com') ? 'flex' : 'none';
+
           list.innerHTML += `
-            <div class="dev-item">
+            <div class="dev-item ${hasStatus}">
               <div class="dev-hdr">
                 <span>${note.user} • ${note.date}</span>
-                <button class="copy-btn" onclick="copySingleNote('${noteId}')" title="Copy Entry">
-                  <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-                </button>
+                <div style="display: flex; align-items: center;">
+                  ${hollowText}
+                  <button class="copy-btn" onclick="copySingleNote('${noteId}')" title="Copy Entry">
+                    <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                  </button>
+                </div>
               </div>
               <div class="dev-body" id="${noteId}">${note.text}</div>
+              <div class="admin-status-box" style="display: ${adminDisplay};">
+                <button class="admin-status-btn" onclick="toggleStatusInput('${note.id}')" id="btn-${note.id}">Add Status</button>
+                <input type="text" class="admin-status-input" id="input-${note.id}" placeholder="Type status (e.g. fixed)...">
+                <button class="admin-status-done" onclick="saveNoteStatus('${note.id}')" id="done-${note.id}">Done</button>
+              </div>
             </div>`;
         });
       });
+    }
+
+    function toggleStatusInput(id) {
+      document.getElementById('btn-' + id).style.display = 'none';
+      document.getElementById('input-' + id).style.display = 'block';
+      document.getElementById('done-' + id).style.display = 'block';
+      document.getElementById('input-' + id).focus();
+    }
+
+    function saveNoteStatus(id) {
+      const val = document.getElementById('input-' + id).value.trim();
+      db.ref('developer/' + id).update({ statusText: val ? val : null });
     }
 
     function showToast() {
