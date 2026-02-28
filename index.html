@@ -276,6 +276,7 @@
               <div class="dev-body" id="${noteId}">${note.text}</div>
               <div class="admin-status-box" style="display: ${adminDisplay};">
                 <button class="admin-status-btn" onclick="toggleStatusInput('${note.id}')" id="btn-${note.id}">Add Status</button>
+                <button class="admin-status-btn" style="border-color: #ff4444; color: #ff4444;" onclick="deleteNote('${note.id}')">Delete</button>
                 <input type="text" class="admin-status-input" id="input-${note.id}" placeholder="Type status (e.g. fixed)...">
                 <button class="admin-status-done" onclick="saveNoteStatus('${note.id}')" id="done-${note.id}">Done</button>
               </div>
@@ -294,6 +295,12 @@
     function saveNoteStatus(id) {
       const val = document.getElementById('input-' + id).value.trim();
       db.ref('developer/' + id).update({ statusText: val ? val : null });
+    }
+
+    function deleteNote(id) {
+      if (confirm('Are you sure you want to delete this note?')) {
+        db.ref('developer/' + id).remove();
+      }
     }
 
     function showToast() {
