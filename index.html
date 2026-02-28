@@ -265,7 +265,7 @@
           list.innerHTML += `
             <div class="dev-item ${hasStatus}">
               <div class="dev-hdr">
-                <span>${note.user} • ${note.date}</span>
+                <span>${note.user} - <span style="color: orange;">${note.app || 'Database'}</span> - ${note.date}</span>
                 <div style="display: flex; align-items: center;">
                   ${hollowText}
                   <button class="copy-btn" onclick="copySingleNote('${noteId}')" title="Copy Entry">
@@ -331,7 +331,8 @@
         text: devQuill.root.innerHTML,
         user: user,
         date: dateStr,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
+        timestamp: firebase.database.ServerValue.TIMESTAMP,
+        app: "E&C Courier"
       }).then(() => devQuill.setText(''));
     }
 
