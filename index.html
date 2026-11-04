@@ -209,6 +209,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+  <!-- Cleans note text before it is shown, so a note can't run code in anyone's browser (a copy of DOMPurify 3.1.6 from npm) -->
+  <script src="purify.min.js"></script>
 
   <script>
     firebase.initializeApp({
@@ -296,23 +298,38 @@
 
     function logout() { firebase.auth().signOut(); }
 
+    // Notes live in developer_notes/<id> (they used to be loose children of developer/, next to
+    // Route Planner and RouteWatcher data, which this page then showed as notes too).
+    const NOTES = 'developer_notes';
+    // Plain text for the page: names, dates and status can't add HTML
+    function esc(v) {
+      return String(v == null ? '' : v).replace(/[&<>"'`]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' }[c]));
+    }
+    // A note's own formatting (bold, lists, links from the editor) stays; scripts, event handlers and the like are removed
+    function cleanHtml(html) {
+      return window.DOMPurify ? DOMPurify.sanitize(String(html || ''), { USE_PROFILES: { html: true } }) : esc(html);
+    }
+
     function loadNotes() {
       const list = document.getElementById('dev-list');
-      db.ref('developer').on('value', snap => {
+      db.ref(NOTES).on('value', snap => {
         list.innerHTML = '';
         const notes = snap.val() || {};
-        allNotesData = Object.entries(notes).map(([key, val]) => ({...val, id: key})).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        // Only notes with a normal id (the database's own push ids); the id goes into the buttons below
+        allNotesData = Object.entries(notes).filter(([key, val]) => /^[A-Za-z0-9_-]{1,40}$/.test(key) && val && typeof val === 'object')
+          .map(([key, val]) => ({...val, id: key})).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
         allNotesData.forEach((note, index) => {
           const noteId = `note-content-${index}`;
           const hasStatus = note.statusText ? 'has-status' : '';
-          const hollowText = note.statusText ? `<span class="status-hollow-text">${note.statusText}</span>` : '';
+          const hollowText = note.statusText ? `<span class="status-hollow-text">${esc(note.statusText)}</span>` : '';
+          const id = esc(note.id);
           const adminDisplay = (currentUserEmail === 'justin@ec.com') ? 'flex' : 'none';
 
           list.innerHTML += `
             <div class="dev-item ${hasStatus}">
               <div class="dev-hdr">
-                <span>${note.user} - <span style="color: orange;">${note.app || 'Database'}</span> - ${note.date}</span>
+                <span>${esc(note.user)} - <span style="color: orange;">${esc(note.app || 'Database')}</span> - ${esc(note.date)}</span>
                 <div style="display: flex; align-items: center;">
                   ${hollowText}
                   <button class="copy-btn" onclick="copySingleNote('${noteId}')" title="Copy Entry">
@@ -320,12 +337,12 @@
                   </button>
                 </div>
               </div>
-              <div class="dev-body" id="${noteId}">${note.text}</div>
+              <div class="dev-body" id="${noteId}">${cleanHtml(note.text)}</div>
               <div class="admin-status-box" style="display: ${adminDisplay};">
-                <button class="admin-status-btn" onclick="toggleStatusInput('${note.id}')" id="btn-${note.id}">Add Status</button>
-                <button class="admin-status-btn" style="border-color: #ff4444; color: #ff4444;" onclick="deleteNote('${note.id}')">Delete</button>
-                <input type="text" class="admin-status-input" id="input-${note.id}" placeholder="Type status (e.g. fixed)...">
-                <button class="admin-status-done" onclick="saveNoteStatus('${note.id}')" id="done-${note.id}">Done</button>
+                <button class="admin-status-btn" onclick="toggleStatusInput('${id}')" id="btn-${id}">Add Status</button>
+                <button class="admin-status-btn" style="border-color: #ff4444; color: #ff4444;" onclick="deleteNote('${id}')">Delete</button>
+                <input type="text" class="admin-status-input" id="input-${id}" maxlength="100" placeholder="Type status (e.g. fixed)...">
+                <button class="admin-status-done" onclick="saveNoteStatus('${id}')" id="done-${id}">Done</button>
               </div>
             </div>`;
         });
@@ -347,12 +364,12 @@
 
     function saveNoteStatus(id) {
       const val = document.getElementById('input-' + id).value.trim();
-      db.ref('developer/' + id).update({ statusText: val ? val : null });
+      db.ref(NOTES + '/' + id).update({ statusText: val ? val.slice(0, 100) : null });
     }
 
     function deleteNote(id) {
       if (confirm('Are you sure you want to delete this note?')) {
-        db.ref('developer/' + id).remove();
+        db.ref(NOTES + '/' + id).remove();
       }
     }
 
@@ -380,7 +397,7 @@
       const now = new Date();
       const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-      db.ref('developer').push({
+      db.ref(NOTES).push({
         text: devQuill.root.innerHTML,
         user: user,
         date: dateStr,
